@@ -1,8 +1,8 @@
 {
-  "name": "ionic-tab-starter",
-  "version": "0.0.1",
-  "author": "Ionic Framework",
-  "homepage": "https://ionicframework.com/",
+  "name": "demo-ionic-tab-routing",
+  "version": "1.0.0",
+  "author": "Marcel Mayer",
+  "homepage": "http://servrox.solutions/",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -54,5 +54,5 @@
     "tslint": "~5.12.0",
     "typescript": "~3.1.6"
   },
-  "description": "An Ionic project"
+  "description": "An Ionic project which shows different kinds of route definition for a tab based layout."
 }
