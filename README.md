@@ -36,6 +36,9 @@ Second the page-module we can route to.<br />
 
 ## Important tip
 
+With Ionic [4.0.0-beta.18](https://github.com/ionic-team/ionic/blob/master/CHANGELOG.md#400-beta18-2018-12-13) there was breaking changes for angular tabs.<br />
+The usage of ion-tab was removed and it's not necessary to use named outlets.<br />
+<br />
 A common mistake is that not all continuing routes (child-routes) are defined in the children-block.<br />
 If you don't define it in the child-block routing may seem to work,<br />
 but things like *ion-back-button* are fucked up.
