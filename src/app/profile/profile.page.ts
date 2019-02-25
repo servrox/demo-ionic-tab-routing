@@ -8,11 +8,13 @@ import { Router, RouterEvent, NavigationEnd } from '@angular/router';
 })
 export class ProfilePage implements OnInit {
 
-  profileSettingsPath = '';
+  profileSettingsPath: string;
+  defaultBackLink: string;
 
   constructor(private router: Router) {
     this.router.events.subscribe((event: RouterEvent) => {
       if (event && event instanceof NavigationEnd && event.url) {
+        this.defaultBackLink = event.url.replace('/profile', '');
         this.profileSettingsPath = event.url + '/profile-settings';
       }
     });
