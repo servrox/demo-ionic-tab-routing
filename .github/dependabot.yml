@@ -1,0 +1,56 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:10"
+      timezone: "Etc/UTC"
+    cooldown:
+      default-days: 7
+    labels:
+      - dependencies
+      - github-actions
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+      github-actions-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "05:10"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 0
+    labels:
+      - dependencies
+      - npm
+    groups:
+      npm-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "05:10"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 0
+    labels:
+      - dependencies
+      - python
+    groups:
+      pip-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
