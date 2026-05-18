@@ -20,7 +20,7 @@ concurrency:
 jobs:
   osv:
     name: OSV vulnerability scan
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars['SUPPLY_CHAIN_SENTINEL_RUNNER'] || 'ubuntu-latest' }}
     permissions:
       contents: read
     steps:
@@ -38,7 +38,7 @@ jobs:
 
   secrets:
     name: Secret scan
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars['SUPPLY_CHAIN_SENTINEL_RUNNER'] || 'ubuntu-latest' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -55,7 +55,7 @@ jobs:
 
   workflow-lint:
     name: GitHub Actions lint
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars['SUPPLY_CHAIN_SENTINEL_RUNNER'] || 'ubuntu-latest' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -77,7 +77,7 @@ jobs:
 
   workflow-security:
     name: GitHub Actions security lint
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars['SUPPLY_CHAIN_SENTINEL_RUNNER'] || 'ubuntu-latest' }}
     permissions:
       actions: read
       contents: read
@@ -128,3 +128,49 @@ jobs:
           done
         env:
           GH_TOKEN: ${{ github.token }}
+
+  summary:
+    name: Security Baseline summary
+    needs:
+      - osv
+      - secrets
+      - workflow-lint
+      - workflow-security
+    if: ${{ always() }}
+    runs-on: ${{ vars['SUPPLY_CHAIN_SENTINEL_RUNNER'] || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+    steps:
+      - name: Summarize security baseline checks
+        env:
+          OSV_RESULT: ${{ needs.osv.result }}
+          SECRETS_RESULT: ${{ needs.secrets.result }}
+          WORKFLOW_LINT_RESULT: ${{ needs['workflow-lint'].result }}
+          WORKFLOW_SECURITY_RESULT: ${{ needs['workflow-security'].result }}
+        run: |
+          format_result() {
+            case "$1" in
+              success) printf '%s' "✅ success" ;;
+              skipped) printf '%s' "⏭️ skipped" ;;
+              cancelled) printf '%s' "⚠️ cancelled" ;;
+              *) printf '%s' "❌ $1" ;;
+            esac
+          }
+
+          {
+            echo "## Security Baseline"
+            echo ""
+            echo "| Check | Purpose | Result |"
+            echo "| --- | --- | --- |"
+            echo "| OSV vulnerability scan | Dependency advisory scan across the repository | $(format_result "$OSV_RESULT") |"
+            echo "| Secret scan | Verified and unknown secret detection with TruffleHog | $(format_result "$SECRETS_RESULT") |"
+            echo "| GitHub Actions lint | Workflow syntax and shell lint via actionlint | $(format_result "$WORKFLOW_LINT_RESULT") |"
+            echo "| GitHub Actions security lint | High-severity workflow security findings via zizmor | $(format_result "$WORKFLOW_SECURITY_RESULT") |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$OSV_RESULT" != "success" ] ||
+            [ "$SECRETS_RESULT" != "success" ] ||
+            [ "$WORKFLOW_LINT_RESULT" != "success" ] ||
+            [ "$WORKFLOW_SECURITY_RESULT" != "success" ]; then
+            exit 1
+          fi
